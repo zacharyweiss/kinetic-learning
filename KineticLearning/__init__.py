@@ -210,7 +210,7 @@ class dynamic_model(object):
 
     def predict(self, X):
         """Return a Prediction"""
-        y = self.model_df.apply(lambda model: model[0].predict([max(min(a, (2**31)-1), -((2**31)-1)) for a in X].reshape(1, -1)), axis=1).values.reshape(-1, )
+        y = self.model_df.apply(lambda model: model[0].predict(np.array([max(min(a, float((2**31)-1.0)), float(-((2**31)-1.0))) for a in X]).reshape(1, -1)), axis=1).values.reshape(-1, )
         return y
 
     def fit_report(self):
@@ -292,7 +292,7 @@ def simulate_dynamics(model, strain_df, time_points=None, tolerance=1e-20, verbo
     try:
         sol = odeintz(f, x0, times, tolerance=tolerance)
     except Warning:
-        sol = [[0]*len(strain_df['states'].columns)]*(len(times)-1)  # raise Exception  #
+        sol = [[0]*len(strain_df['states'].columns)]*len(times)  # raise Exception  #
 
     # sol = odeint(f,x0,times,atol=5*10**-4,rtol=10**-6)
     trajectory_df = pd.DataFrame(sol, columns=strain_df['states'].columns)

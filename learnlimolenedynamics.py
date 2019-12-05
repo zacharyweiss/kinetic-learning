@@ -13,7 +13,7 @@ controls = ['AtoB', 'GPPS', 'HMGR', 'HMGS', 'Idi', 'Limonene Synthase', 'MK', 'P
 states = ['Acetyl-CoA', 'HMG-CoA', 'Mevalonate', 'Mev-P', 'IPP/DMAPP', 'Limonene']
 
 init_max = 10
-gens = 3
+gens = 1
 range_aug = [10, 500]  # default 200
 range_win = [4, 20]  # must be less than x, default 7
 range_pol = [1, 6]  # must be less than window, default 2
@@ -80,7 +80,7 @@ def sampler(val, val_rng, sigma, aug=False, win=False, pol=False):
             print("Square Error:", err)
             score += err
 
-            # plt.show()
+            plt.savefig(str(inits)+str(metabolite).replace('/', '_')+str(val))
 
 
         # SCORE IT
