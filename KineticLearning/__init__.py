@@ -16,6 +16,7 @@ from tpot import TPOTRegressor
 from scipy.interpolate import interp1d
 from scipy.integrate import odeint, ode
 import matplotlib.pyplot as plt
+import warnings
 import seaborn as sns
 
 
@@ -25,9 +26,9 @@ def evenly_space(fun, times):
     pass
 
 
-def read_timeseries_data(csv_path, states, controls, impute=True,
-                         time='Time', strain='Strain', augment=None,
-                         est_derivative=True, smooth=False, n=None):
+def read_timeseries_data(csv_path, states, controls, impute=True, time='Time',
+                         strain='Strain', est_derivative=True, smooth=False, n=None,
+                         augment=200, window_size=7, poly_order=2):
     """Put DataFrame into the TSDF format.
 
     The input csv or dataframe should have a
@@ -68,7 +69,7 @@ def read_timeseries_data(csv_path, states, controls, impute=True,
 
     # Estimate the Derivative
     if est_derivative:
-        df = estimate_state_derivative(df)
+        df = estimate_state_derivative(df, window_size, poly_order)
 
     return df
 
@@ -105,7 +106,7 @@ def augment_data(tsdf, n=200):
     return tsdf
 
 
-def estimate_state_derivative(tsdf):
+def estimate_state_derivative(tsdf, window_size, poly_order):
     """Estimate the Derivative of the State Variables"""
 
     # Check if a vector is evenly spaced
@@ -120,7 +121,7 @@ def estimate_state_derivative(tsdf):
         diff = delta(times)
 
         # Find Derivative of evenly spaced data using the savgol filter
-        savgol = lambda x: savgol_filter(x, 7, 2, deriv=1, delta=diff)
+        savgol = lambda x: savgol_filter(x, window_size, poly_order, deriv=1, delta=diff)
 
         if evenly_spaced(times):
             state_df = state_df.apply(savgol)
@@ -209,7 +210,7 @@ class dynamic_model(object):
 
     def predict(self, X):
         """Return a Prediction"""
-        y = self.model_df.apply(lambda model: model[0].predict(X.reshape(1, -1)), axis=1).values.reshape(-1, )
+        y = self.model_df.apply(lambda model: model[0].predict([max(min(a, (2**31)-1), -((2**31)-1)) for a in X].reshape(1, -1)), axis=1).values.reshape(-1, )
         return y
 
     def fit_report(self):
@@ -225,7 +226,9 @@ def odeintz(fun, y0, times, tolerance=1e-4, verbose=False):
     maxDelta = 10
 
     f = lambda t, x: fun(x, t)
-    r = ode(f).set_integrator('dop853', nsteps=1000, atol=1e-4)
+    # r = ode(f).set_integrator('dopri5', nsteps=1000, atol=tolerance)
+
+    r = ode(f).set_integrator('dop853', nsteps=1000, atol=tolerance)
     r.set_initial_value(y0, times[0])
 
     # progress bar
@@ -268,7 +271,7 @@ def learn_dynamics(df, generations=50, population_size=30, verbose=False):
     return model
 
 
-def simulate_dynamics(model, strain_df, time_points=None, tolerance=1e-4, verbose=False):
+def simulate_dynamics(model, strain_df, time_points=None, tolerance=1e-20, verbose=False):
     """Use Learned Dynamics to Generate a Simulated Trajectory in the State Space"""
     display(strain_df)
     times = strain_df.index.get_level_values(1)
@@ -285,7 +288,12 @@ def simulate_dynamics(model, strain_df, time_points=None, tolerance=1e-4, verbos
     f = lambda x, t: model.predict(np.concatenate([x, u(t)]))
 
     # Return DataFrame with Predicted Trajectories (Use Integrator with Sufficiently Low tolerances...)
-    sol = odeintz(f, x0, times, tolerance=tolerance)
+    warnings.filterwarnings('error')  # if warnings thrown due to step size, set array to zero
+    try:
+        sol = odeintz(f, x0, times, tolerance=tolerance)
+    except Warning:
+        sol = [[0]*len(strain_df['states'].columns)]*(len(times)-1)  # raise Exception  #
+
     # sol = odeint(f,x0,times,atol=5*10**-4,rtol=10**-6)
     trajectory_df = pd.DataFrame(sol, columns=strain_df['states'].columns)
     trajectory_df['Time'] = times
