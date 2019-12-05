@@ -73,14 +73,16 @@ def sampler(val, val_rng, sigma, aug=False, win=False, pol=False):
             ax = plt.gca()
             control = strain_df['states'].loc[strain_df.index.get_level_values(0) == 'L2'].reset_index()
             model = trajectory_df
-            control.plot(x='Time', y=metabolite, ax=ax)
-            model.plot(x='Time', y=metabolite, ax=ax)
+            control.plot(x='Time', y=metabolite, ax=ax, label=metabolite)
+            metabolite_name = str(metabolite) + " model"
+            model.plot(x='Time', y=metabolite, ax=ax, label=metabolite_name)
             print("Metabolite:", metabolite)
             err = square_error(np.array(control[metabolite]), np.array(model[metabolite]))
             print("Square Error:", err)
             score += err
 
             plt.savefig(str(inits)+str(metabolite).replace('/', '_')+str(val))
+        plt.close('all')
 
 
         # SCORE IT
@@ -89,11 +91,11 @@ def sampler(val, val_rng, sigma, aug=False, win=False, pol=False):
         # CHOOSE NEXT
         mu = scores[np.argmin([row[1] for row in scores])][0]  # best score position
         if inits == 0:
-            val = round(min(val_rng) + (2 / 3) * (max(val_rng) - min(val_rng)))
+            val = int(round(min(val_rng) + (2 / 3) * (max(val_rng) - min(val_rng))))
         else:
             while val > max(val_rng) or val < min(val_rng) or val == scores[inits][0]:
                 print("Old var: " + str(mu))
-                val = round(sigma * np.random.randn() + mu)  # samples next point from normal dist around current best
+                val = int(round(sigma * np.random.randn() + mu))  # samples next point from normal dist around current best
                 print("New var picked: " + str(val))
 
         print(scores)
