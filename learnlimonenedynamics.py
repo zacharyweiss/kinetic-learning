@@ -13,9 +13,9 @@ controls = ['AtoB', 'GPPS', 'HMGR', 'HMGS', 'Idi', 'Limonene Synthase', 'MK', 'P
 states = ['Acetyl-CoA', 'HMG-CoA', 'Mevalonate', 'Mev-P', 'IPP/DMAPP', 'Limonene']
 
 init_max = 10
-gens = 1
+gens = 3
 range_aug = [10, 500]  # default 200
-range_win = [4, 20]  # must be less than x, default 7
+range_win = [3, 19]  # must be less than x, default 7
 range_pol = [1, 6]  # must be less than window, default 2
 
 
@@ -92,15 +92,26 @@ def sampler(val, val_rng, sigma, aug=False, win=False, pol=False):
         mu = scores[np.argmin([row[1] for row in scores])][0]  # best score position
         if inits == 0:
             val = int(round(min(val_rng) + (2 / 3) * (max(val_rng) - min(val_rng))))
+            if win and (val % 2 == 0):
+                val += 1
         else:
-            while val > max(val_rng) or val < min(val_rng) or val == scores[inits][0]:
+            while val > max(val_rng) or val < min(val_rng) or (val in [row[0] for row in scores]):
                 print("Old var: " + str(mu))
                 val = int(round(sigma * np.random.randn() + mu))  # samples next point from normal dist around current best
+                if win and val % 2 == 0:
+                    val += 1
                 print("New var picked: " + str(val))
 
         print(scores)
         inits += 1
 
 
-value, var = picker(range_aug)
-sampler(value, range_aug, var, aug=True)
+value, var = picker(range_pol)
+# if value % 2 == 0:  # only for use with win, as values must be odd
+#     value += 1
+print("Start val: "+str(value))
+sampler(value, range_pol, var, pol=True)
+
+# range_aug
+# range_win
+# range_pol
