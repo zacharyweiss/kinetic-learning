@@ -1,6 +1,7 @@
 # # A Simplified Version of the Kinetic Learning Algorithm
 # 
-# There was a bunch of kruft in the old kinetic learning source code.  I boiled it down into its key components and simplified the data structures.  Now the code is more managable, understandable, and extensible.
+# There was a bunch of kruft in the old kinetic learning source code. I boiled it down into its key components and
+# simplified the data structures. Now the code is more managable, understandable, and extensible.
 # 
 # **Todo:**  
 # 1. Add Smoothing to Data Augmentation as an Option.
@@ -182,9 +183,10 @@ class dynamic_model(object):
             verbosity = 0
 
         def fit_single_output(row):
-            tpot = TPOTRegressor(generations=generations, population_size=population_size, verbosity=verbosity,
-                                 n_jobs=1)
+            tpot = TPOTRegressor(generations=generations, population_size=population_size, verbosity=2,
+                                 n_jobs=1, config_dict='TPOT light')
             fit_model = tpot.fit(X, row).fitted_pipeline_
+            print(tpot.score(X, row))
             return fit_model
 
         self.model_df = self.tsdf['derivatives'].apply(fit_single_output).to_frame()
