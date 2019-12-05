@@ -19,9 +19,6 @@ range_win = [3, 19]  # must be less than x, default 7
 range_pol = [1, 6]  # must be less than window, default 2
 
 
-# wind = 7
-# poly = 2
-# augm = 200
 def square_error(actual, predicted):
     sq_sum = 0
     for i in range(len(actual)):
@@ -57,15 +54,6 @@ def sampler(val, val_rng, sigma, aug=False, win=False, pol=False):
 
         strain_df = limonene_df.loc[limonene_df.index.get_level_values(0) == 'L2']
         trajectory_df = simulate_dynamics(model, strain_df, verbose=True)
-        """
-        for metabolite in limonene_df['states'].columns:
-            plt.figure()
-            ax = plt.gca()
-            strain_df['states'].loc[strain_df.index.get_level_values(0) == 'L2'].reset_index().plot(x='Time', y=metabolite,
-                                                                                                    ax=ax, label=metabolite)
-            metabolite_name = metabolite + " traj."
-            trajectory_df.plot(x='Time', y=metabolite, ax=ax, label=metabolite_name)
-            plt.show()"""
 
         score = 0
         for metabolite in limonene_df['states'].columns:

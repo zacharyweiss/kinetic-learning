@@ -1,13 +1,3 @@
-# # A Simplified Version of the Kinetic Learning Algorithm
-# 
-# There was a bunch of kruft in the old kinetic learning source code. I boiled it down into its key components and
-# simplified the data structures. Now the code is more managable, understandable, and extensible.
-# 
-# **Todo:**  
-# 1. Add Smoothing to Data Augmentation as an Option.
-# 2. Add a Random Seed Input
-# 3. Remove Warning From Import!
-
 import pandas as pd
 from IPython.display import display
 from scipy.signal import savgol_filter
@@ -17,7 +7,6 @@ from scipy.interpolate import interp1d
 from scipy.integrate import odeint, ode
 import matplotlib.pyplot as plt
 import warnings
-import seaborn as sns
 
 
 # Decorators
