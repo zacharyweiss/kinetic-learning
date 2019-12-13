@@ -5,15 +5,14 @@ import math
 
 os.chdir(r"C:\Users\Zach\Documents\GitHub\kinetic-learning")  # setting CWD, else file paths break
 from KineticLearning import learn_dynamics, read_timeseries_data, simulate_dynamics
-from IPython.display import display
 import pandas as pd
 
 # Import DataFrame from CSV & Define Important Variables
 controls = ['AtoB', 'GPPS', 'HMGR', 'HMGS', 'Idi', 'Limonene Synthase', 'MK', 'PMD', 'PMK']
 states = ['Acetyl-CoA', 'HMG-CoA', 'Mevalonate', 'Mev-P', 'IPP/DMAPP', 'Limonene']
 
-init_max = 10
-gens = 3
+init_max = 50
+gens = 30
 range_aug = [10, 500]  # default 200
 range_win = [3, 19]  # must be less than x, default 7
 range_pol = [1, 6]  # must be less than window, default 2
@@ -94,11 +93,11 @@ def sampler(val, val_rng, sigma, aug=False, win=False, pol=False):
         inits += 1
 
 
-value, var = picker(range_pol)
+value, var = picker(range_aug)
 # if value % 2 == 0:  # only for use with win, as values must be odd
 #     value += 1
 print("Start val: "+str(value))
-sampler(value, range_pol, var, pol=True)
+sampler(value, range_aug, var, aug=True)
 
 # range_aug
 # range_win
