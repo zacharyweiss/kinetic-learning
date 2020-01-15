@@ -11,8 +11,8 @@ import pandas as pd
 controls = ['AtoB', 'GPPS', 'HMGR', 'HMGS', 'Idi', 'Limonene Synthase', 'MK', 'PMD', 'PMK']
 states = ['Acetyl-CoA', 'HMG-CoA', 'Mevalonate', 'Mev-P', 'IPP/DMAPP', 'Limonene']
 
-init_max = 50
-gens = 30
+init_max = 10
+gens = 100
 range_aug = [10, 500]  # default 200
 range_win = [3, 19]  # must be less than x, default 7
 range_pol = [1, 6]  # must be less than window, default 2
@@ -38,7 +38,7 @@ def sampler(val, val_rng, sigma, aug=False, win=False, pol=False):
     while inits < init_max:
         if aug and ~(win or pol):
             limonene_df = read_timeseries_data("data/limonene_data.csv", states, controls, time='Hour', strain='Strain',
-                                               augment=val)  # default augment=200
+                                               augment=200) #val)  # default augment=200
         elif win and ~(aug or pol):
             limonene_df = read_timeseries_data("data/limonene_data.csv", states, controls, time='Hour', strain='Strain',
                                                window_size=val)
